@@ -17,7 +17,7 @@ from susi.susi_para import get_susi_para
 import susi.susi_io
 from susi.susi_main import Susi
 import os
-
+from netCDF4 import Dataset  
 
 
 
@@ -77,6 +77,40 @@ def get_inputs():
 
 
 
+def get_esom_inputs(ncf, substance, ditch):
+
+   
+    LL = ncf['esom'][substance]['LL'][ditch].data/10000.
+    LW = ncf['esom'][substance]['LW'][ditch].data/10000.
+    FL = ncf['esom'][substance]['FL'][ditch].data/10000.
+    FW = ncf['esom'][substance]['FW'][ditch].data/10000.
+    H = ncf['esom'][substance]['H'][ditch].data/10000.
+
+    P1 = ncf['esom'][substance]['P1'][ditch].data/10000.
+    P2 = ncf['esom'][substance]['P2'][ditch].data/10000.
+    P3 = ncf['esom'][substance]['P3'][ditch].data/10000.
+    
+    LL = LL[(LL<1000000000).all(axis=1)][-1] # viimeinen vuosi
+    LW = LW[(LW<1000000000).all(axis=1)][-1]
+    FL = FL[(FL<1000000000).all(axis=1)][-1]
+    FW = FW[(FW<1000000000).all(axis=1)][-1]
+    H = H[(H<1000000000).all(axis=1)][-1]
+    
+    P1 = P1[(P1<1000000000).all(axis=1)][-1]
+    P2 = P2[(P2<1000000000).all(axis=1)][-1]
+    P3 = P3[(P3<1000000000).all(axis=1)][-1]
+
+    peat_inputs = np.array([LL, LW, FL, FW, H, P1, P2, P3])
+    
+    return peat_inputs
+
+
+def get_nutstat(ncf, ditch):
+    
+    nutstat = ncf['stand']['nut_stat'][ditch].data
+    nutstat = nutstat[(nutstat<1000000000).all(axis=1)][-1]
+
+    return nutstat
 
 
 def get_sfc_spec(sfc, puulaji):
@@ -140,7 +174,8 @@ def check_end(n_ditch_scens, new_end_yr, end_yr):
     return end_reached
 
 
-def call_local_susi_silvi(wdata, mottifile, sarkaSim, ageSim, sfc_mean, sfc_spec, site, break_vol, start_yr_arr, start_yr_ini, end_yr, vol_aft, susi_outfile, ash_year):
+def call_local_susi_silvi(wdata, mottifile, sarkaSim, ageSim, sfc_mean, sfc_spec, site, break_vol, start_yr_arr, start_yr_ini, end_yr, vol_aft, susi_outfile, ash_year,\
+                         peat_mass_inputs, peat_N_inputs, peat_P_inputs, peat_K_inputs, nutstat):
 
     susiPath, wpath, mottipath, folderName, outfile = get_paths()
     
@@ -167,7 +202,8 @@ def call_local_susi_silvi(wdata, mottifile, sarkaSim, ageSim, sfc_mean, sfc_spec
     
     new_end_yr = new_susi.run_susi(forc, wpara, cpara, org_para, spara, outpara, photopara, start_yr_arr, end_yr, wlocation = 'undefined', 
                             mottifile=mottifile, peat= 'other', photosite='All data', 
-                            folderName=folderName,ageSim=ageSimD, sarkaSim=sarkaSim, sfc=sfc, susiPath=susiPath, break_vol=break_vol)       
+                            folderName=folderName,ageSim=ageSimD, sarkaSim=sarkaSim, sfc=sfc, susiPath=susiPath, break_vol=break_vol,\
+                                  peat_mass_inputs=peat_mass_inputs, peat_N_inputs=peat_N_inputs, peat_P_inputs=peat_P_inputs, peat_K_inputs=peat_K_inputs, nutstat=nutstat)       
                  
     #os.rename(folderName + "susi"+str(i)+".nc", folderName + susi_outfile)
     
@@ -441,6 +477,26 @@ def call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_v
     
     susi_outfile = str(stand) + '_n' + str(j) + '.nc'
     
+    # Try if peat mass inputs can be found:
+    try:
+        ncf = Dataset(folderName + str(stand) + '_n' + str(j-1) + '.nc')
+        
+        ditch=1 # tähän pitäisi saada oikea ojasyvyys!!
+
+        peat_mass_inputs = get_esom_inputs(ncf,'Mass',ditch)
+        peat_N_inputs = get_esom_inputs(ncf,'N',ditch)
+        peat_P_inputs = get_esom_inputs(ncf,'P',ditch)
+        peat_K_inputs = get_esom_inputs(ncf,'K',ditch)
+        
+        nutstat = get_nutstat(ncf, ditch)
+        
+    except:
+        peat_mass_inputs = None
+        peat_N_inputs = None
+        peat_P_inputs = None
+        peat_K_inputs = None
+        nutstat = None
+    
     standInfo = kuviot[kuviot['KUVIO']==stand]
     standInfo = standInfo.reset_index(drop=True)
     
@@ -498,7 +554,7 @@ def call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_v
                 if (subgroup>=4) & (treesp==1):
                     site = 'pine_S'
                     
-                new_end_yr = call_local_susi_silvi(wdata, mottifile, sarkaSim, ageSim, sfc, sfc_spec, site, break_vol, start_yr_arr, start_yr_ini, end_yr, vol_aft, susi_outfile, ash_year)
+                new_end_yr = call_local_susi_silvi(wdata, mottifile, sarkaSim, ageSim, sfc, sfc_spec, site, break_vol, start_yr_arr, start_yr_ini, end_yr, vol_aft, susi_outfile, ash_year, peat_mass_inputs, peat_N_inputs, peat_P_inputs, peat_K_inputs, nutstat)
              
                 return new_end_yr, motti_found
             
