@@ -29,9 +29,9 @@ class Susi():
 
     def run_susi(self, forc, wpara, cpara, org_para, spara, outpara, photopara, start_yr_arr, end_yr, wlocation=None, mottifile=None, peat=None, 
                  photosite=None, folderName=None, hdomSim=None, volSim=None, ageSim=None, 
-                 sarkaSim=None, sfc=None, susiPath=None, simLAI=None, kaista=None, sitename=None, break_vol=None): 
+                 sarkaSim=None, sfc=None, susiPath=None, simLAI=None, kaista=None, sitename=None, break_vol=None, peat_mass_inputs=None, peat_N_inputs=None, peat_P_inputs=None, peat_K_inputs=None, nutstat=None): 
         
-        print ('******** Susi-peatland simulator v.10 (2022) c Annamari LaurÃ©n *********************')
+        print ('******** Susi-peatland simulator v.10 (2022) c Annamari LaurÃƒÂ©n *********************')
         print ('           ')    
         print ('Initializing stand and site:') 
          
@@ -57,6 +57,12 @@ class Susi():
 
         stand = Stand(nscens, yrs, spara['canopylayers'], spara['n'], sfc, ageSim, mottifile, photopara)   
         stand.update()
+        
+        # IF CURRENT NUT STATUS IS KNOWN:
+        # if nutstat is not None:
+        #     stand.nut_stat = nutstat
+        #     stand.previous_nut_stat = nutstat
+        
         #spara = stand.update_spara(spara)    
         
         out.initialize_stand()
@@ -75,9 +81,55 @@ class Susi():
     
         
         esmass = Esom(spara, sfc, 366*yrs, substance='Mass')                       # initializing organic matter decomposition instace for mass
+        
+        # IF CURRENT STORAGES ARE KNOWN:
+            
+        if peat_mass_inputs is not None:
+            esmass.M[:,:,2] = peat_mass_inputs[0]
+            esmass.M[:,:,3] = peat_mass_inputs[1]
+            esmass.M[:,:,4] = peat_mass_inputs[2]
+            esmass.M[:,:,5] = peat_mass_inputs[3]
+            esmass.M[:,:,6] = peat_mass_inputs[4]
+            esmass.M[:,:,7] = peat_mass_inputs[5] # nodes x 1 array
+            esmass.M[:,:,8] = peat_mass_inputs[6]
+            esmass.M[:,:,9] = peat_mass_inputs[7]
+        
+        
+        
         esN = Esom(spara, sfc, 366*yrs, substance='N')                             # initializing organic matter decomposition instace for N
         esP = Esom(spara, sfc, 366*yrs, substance='P')                             # initializing organic matter decomposition instace for P
         esK = Esom(spara, sfc, 366*yrs, substance='K')                             # initializing organic matter decomposition instace for K
+        
+        
+        if peat_N_inputs is not None:
+            esN.M[:,:,2] = peat_N_inputs[0]
+            esN.M[:,:,3] = peat_N_inputs[1]
+            esN.M[:,:,4] = peat_N_inputs[2]
+            esN.M[:,:,5] = peat_N_inputs[3]
+            esN.M[:,:,6] = peat_N_inputs[4]
+            esN.M[:,:,7] = peat_N_inputs[5] # nodes x 1 array
+            esN.M[:,:,8] = peat_N_inputs[6]
+            esN.M[:,:,9] = peat_N_inputs[7]     
+
+            esP.M[:,:,2] = peat_P_inputs[0]
+            esP.M[:,:,3] = peat_P_inputs[1]
+            esP.M[:,:,4] = peat_P_inputs[2]
+            esP.M[:,:,5] = peat_P_inputs[3]
+            esP.M[:,:,6] = peat_P_inputs[4]
+            esP.M[:,:,7] = peat_P_inputs[5] # nodes x 1 array
+            esP.M[:,:,8] = peat_P_inputs[6]
+            esP.M[:,:,9] = peat_P_inputs[7]    
+
+            esK.M[:,:,2] = peat_K_inputs[0]
+            esK.M[:,:,3] = peat_K_inputs[1]
+            esK.M[:,:,4] = peat_K_inputs[2]
+            esK.M[:,:,5] = peat_K_inputs[3]
+            esK.M[:,:,6] = peat_K_inputs[4]
+            esK.M[:,:,7] = peat_K_inputs[5] # nodes x 1 array
+            esK.M[:,:,8] = peat_K_inputs[6]
+            esK.M[:,:,9] = peat_K_inputs[7]
+        
+        
         ferti = Fertilization(spara)
     
         out.initialize_esom('Mass')
@@ -127,7 +179,7 @@ class Susi():
         peat_temperatures = pt.create_outarrays(rounds, length, spara['nLyrs'])     # daily peat temperature profiles
         intercs, evaps, ETs, transpis, efloors, swes = cpy.create_outarrays(rounds, length, n)
         
-        # Leenan lisÃ¤ys:
+        # Leenan lisÃƒÂ¤ys:
         new_end_yr = np.zeros(rounds, dtype=int)
         
         #***********Scenario loop ********************************************************
@@ -149,6 +201,13 @@ class Susi():
             print ('Computing canopy and soil hydrology ', length, ' days', 'scenario:', scen[r])
             
             stand.reset_domain(ageSim)  
+            
+            # IF CURRENT NUT STATUS IS KNOWN:
+                
+            # if nutstat is not None:
+            #     stand.nut_stat = nutstat
+            #     stand.previous_nut_stat = nutstat
+            
             out.write_scen(r, hdr_west, hdr_east)
             
             out.write_stand(r, 0, stand)
@@ -163,10 +222,51 @@ class Susi():
     
             
             esmass.reset_storages()
+            
+            # # IF CURRENT STORAGES ARE KNOWN:
+            
+            if peat_mass_inputs is not None:
+                esmass.M[:,:,2] = peat_mass_inputs[0]
+                esmass.M[:,:,3] = peat_mass_inputs[1]
+                esmass.M[:,:,4] = peat_mass_inputs[2]
+                esmass.M[:,:,5] = peat_mass_inputs[3]
+                esmass.M[:,:,6] = peat_mass_inputs[4]
+                esmass.M[:,:,7] = peat_mass_inputs[5] # nodes x 1 array
+                esmass.M[:,:,8] = peat_mass_inputs[6]
+                esmass.M[:,:,9] = peat_mass_inputs[7]           
+            
             esN.reset_storages()
             esP.reset_storages()
             esK.reset_storages()
-    
+
+            if peat_mass_inputs is not None:
+                esN.M[:,:,2] = peat_N_inputs[0]
+                esN.M[:,:,3] = peat_N_inputs[1]
+                esN.M[:,:,4] = peat_N_inputs[2]
+                esN.M[:,:,5] = peat_N_inputs[3]
+                esN.M[:,:,6] = peat_N_inputs[4]
+                esN.M[:,:,7] = peat_N_inputs[5] # nodes x 1 array
+                esN.M[:,:,8] = peat_N_inputs[6]
+                esN.M[:,:,9] = peat_N_inputs[7]     
+
+                esP.M[:,:,2] = peat_P_inputs[0]
+                esP.M[:,:,3] = peat_P_inputs[1]
+                esP.M[:,:,4] = peat_P_inputs[2]
+                esP.M[:,:,5] = peat_P_inputs[3]
+                esP.M[:,:,6] = peat_P_inputs[4]
+                esP.M[:,:,7] = peat_P_inputs[5] # nodes x 1 array
+                esP.M[:,:,8] = peat_P_inputs[6]
+                esP.M[:,:,9] = peat_P_inputs[7]    
+
+                esK.M[:,:,2] = peat_K_inputs[0]
+                esK.M[:,:,3] = peat_K_inputs[1]
+                esK.M[:,:,4] = peat_K_inputs[2]
+                esK.M[:,:,5] = peat_K_inputs[3]
+                esK.M[:,:,6] = peat_K_inputs[4]
+                esK.M[:,:,7] = peat_K_inputs[5] # nodes x 1 array
+                esK.M[:,:,8] = peat_K_inputs[6]
+                esK.M[:,:,9] = peat_K_inputs[7]    
+            
             out.write_esom(r, 0, 'Mass', esmass, inivals=True)
             out.write_esom(r, 0, 'N', esN, inivals=True)
             out.write_esom(r, 0, 'P', esP, inivals=True)
@@ -328,7 +428,7 @@ class Susi():
                         year +=1  
                         
                         
-                        break # Tarkista, tallentuuko kaikki tarpeellinen siltä vuodelta, johon simulointi päättyy! Vai tallentuuko vain edellinen vuosi?
+                        break # Tarkista, tallentuuko kaikki tarpeellinen siltÃ¤ vuodelta, johon simulointi pÃ¤Ã¤ttyy! Vai tallentuuko vain edellinen vuosi?
                     else:
                         new_end_yr[r] = yr                       
                 else:
@@ -414,7 +514,7 @@ class Susi():
     
         out.close()
         
-        # Leenan lisäys -> new_end_yr pitäisi siirtää myös suoraan outputtiin
+        # Leenan lisÃ¤ys -> new_end_yr pitÃ¤isi siirtÃ¤Ã¤ myÃ¶s suoraan outputtiin
         print('New_end_yr=', str(new_end_yr))
         return new_end_yr
     
