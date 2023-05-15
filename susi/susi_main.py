@@ -29,7 +29,7 @@ class Susi():
 
     def run_susi(self, forc, wpara, cpara, org_para, spara, outpara, photopara, start_yr_arr, end_yr, wlocation=None, mottifile=None, peat=None, 
                  photosite=None, folderName=None, hdomSim=None, volSim=None, ageSim=None, 
-                 sarkaSim=None, sfc=None, susiPath=None, simLAI=None, kaista=None, sitename=None, break_vol=None, peat_mass_inputs=None, peat_N_inputs=None, peat_P_inputs=None, peat_K_inputs=None, nutstat=None)): 
+                 sarkaSim=None, sfc=None, susiPath=None, simLAI=None, kaista=None, sitename=None, break_vol=None, peat_mass_inputs=None, peat_N_inputs=None, peat_P_inputs=None, peat_K_inputs=None, nutstat=None): 
         
         print ('******** Susi-peatland simulator v.10 (2022) c Annamari Laurén *********************')
         print ('           ')    
