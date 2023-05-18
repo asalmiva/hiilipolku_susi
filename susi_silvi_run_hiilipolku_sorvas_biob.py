@@ -44,13 +44,17 @@ How to use:
 def get_paths():
     
     susiPath = r'/scratch/project_2002470/SUSI_HIILIPOLKU/susi/' # susi python files path
-    outPath=r'/scratch/project_2002470/SUSI_HIILIPOLKU/outputs/Sorvasranta_BIO_B/' # outputs path
+    outfol=r'/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/' # outputs path
+    outPath=r'/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/Sorvasranta_BIO_B/' # outputs path
     wpath = r'/scratch/project_2002470/SUSI_HIILIPOLKU/inputs/' # weather data path
     #mottifolder = r'/scratch/project_2002470/SUSI_HIILIPOLKU/Sorvasranta_BIO_/'
     mottipath = r'/scratch/project_2002470/HIILIPOLKU_data/Sorvasranta/Sorvasranta_BIO_B/'
-    outfile = r'/scratch/project_2002470/SUSI_HIILIPOLKU/outputs/Sorvasranta_BIO_B/Sorvasranta_BIO_B.txt'    
+    outfile = r'/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/Sorvasranta_BIO_B/Sorvasranta_BIO_B.txt'    
+    if not os.path.exists(outfol):
+        os.mkdir(outfol)    
     if not os.path.exists(outPath):
-        os.mkdir(outPath)    
+        os.mkdir(outPath)
+    
     return susiPath, wpath, mottipath, outPath, outfile
 
 def get_motti_data():
