@@ -244,6 +244,9 @@ def call_local_susi_motti_silvi_list(i):
         myfile.write('\n\nStand=' + str(kuviolista[i]) + ', i=' + str(i))  
         
     stand = kuviolista[i]
+    outfilei=outfile[:-4]+'_'+str(kuviolista[i])+'.txt'
+    with open(outfilei, "a") as myfilei:
+        myfilei.write('\n\nStand=' + str(kuviolista[i]) + ', i=' + str(i))  
 
     pdata = poistumat[(poistumat['KUVIO']==stand) & (poistumat['HARV']>1)]       
     pdata = pdata.reset_index(drop=True)
@@ -365,6 +368,8 @@ def call_local_susi_motti_silvi_list(i):
 
                     with open(outfile, "a") as myfile:
                         myfile.write('\n' + 'j=0: ' + str(start_yr) + '...' + str(new_end_yr))  
+                    with open(outfilei, "a") as myfilei:
+                        myfilei.write('\n' + 'j=0: ' + str(start_yr) + '...' + str(new_end_yr))  
                         
                     end_reached = check_end(n_ditch_scens, new_end_yr, end_yr)
                     
@@ -398,6 +403,8 @@ def call_local_susi_motti_silvi_list(i):
                 if end_reached == True: # Tsekataan, päästiinkö jo kokonaissimulointiajan loppuun
                     with open(outfile, "a") as myfile:
                         myfile.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr))  
+                    with open(outfilei, "a") as myfilei:
+                        myfilei.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr))  
                     break
                 else:
                     if motti_found==True:
@@ -406,11 +413,15 @@ def call_local_susi_motti_silvi_list(i):
                         
                         with open(outfile, "a") as myfile:
                             myfile.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr) + ', ' + str(simYearSum) + ' years')  
+                        with open(outfilei, "a") as myfilei:
+                            myfilei.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr) + ', ' + str(simYearSum) + ' years')  
 
                     else:
 
                         with open(outfile, "a") as myfile:
                             myfile.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr) + ', ' + str(simYearSum) + ' years, Motti not found')  
+                        with open(outfilei, "a") as myfilei:
+                            myfilei.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr) + ', ' + str(simYearSum) + ' years, Motti not found')  
 
                     j=j+1
             
@@ -424,10 +435,12 @@ def call_local_susi_motti_silvi_list(i):
                     
                     start_yr_arr = start_yr + simYearSum
 
-                    new_end_yr, motti_found = call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_vol, start_yr_ini, n_ditch_scens, vol_after[j], sfc_spec, ash_year=ash_year, vol_ini_0=vol_ini_0)    
+                    new_end_yr, motti_found = call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_vol, start_yr_ini, n_ditch_scens, np.nan, sfc_spec, ash_year=ash_year, vol_ini_0=vol_ini_0) #vol_after[j]   
 
                     with open(outfile, "a") as myfile:
                         myfile.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr))  
+                    with open(outfilei, "a") as myfilei:
+                        myfilei.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr))  
                     
                         
                     end_reached = check_end(n_ditch_scens, new_end_yr, end_yr)
@@ -435,10 +448,14 @@ def call_local_susi_motti_silvi_list(i):
                     if end_reached == True: # Tsekataan, päästiinkö jo kokonaissimulointiajan loppuun
                         with open(outfile, "a") as myfile:
                             myfile.write('\n End OK.')  
+                        with open(outfilei, "a") as myfilei:
+                            myfilei.write('\n End OK.')  
                         break
                     else:
                         with open(outfile, "a") as myfile:
                             myfile.write('\n Total simulation years not reached!')  
+                        with open(outfilei, "a") as myfilei:
+                            myfilei.write('\n Total simulation years not reached!')  
                         break
 
             else:   # Jos motti-tiedostoja 1 tai 2 kpl
@@ -453,16 +470,22 @@ def call_local_susi_motti_silvi_list(i):
                     
                     with open(outfile, "a") as myfile:
                         myfile.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr))  
+                    with open(outfilei, "a") as myfilei:
+                        myfilei.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr))  
                                             
                     end_reached = check_end(n_ditch_scens, new_end_yr, end_yr)
                     
                     if end_reached == True: # Tsekataan, päästiinkö jo kokonaissimulointiajan loppuun
                         with open(outfile, "a") as myfile:
                             myfile.write('\n End OK.')  
+                        with open(outfilei, "a") as myfilei:
+                            myfilei.write('\n End OK.')  
                         break
                     else:
                         with open(outfile, "a") as myfile:
                             myfile.write('\n Total simulation years not reached!')  
+                        with open(outfilei, "a") as myfilei:
+                            myfilei.write('\n Total simulation years not reached!')  
                         break
 
 
@@ -477,7 +500,7 @@ def call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_v
                   'under':{0:'susi_motti_input_lyr_2.xlsx'}}  # if key=0, file name can be anything
     
     susi_outfile = str(stand) + '_n' + str(j) + '.nc'
-    
+    outfilei=outfile[:-4]+'_'+str(stand)+'.txt'  
     # Try is peat mass inputs can be found:
     try:
         ncf = Dataset(folderName + str(stand) + '_n' + str(j-1) + '.nc')
@@ -509,6 +532,8 @@ def call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_v
     except:
         with open(outfile, "a") as myfile:
             myfile.write('\nMotti file missing:', mottifile['path'] + '/'+ mottifile['dominant'][1])
+        with open(outfilei, "a") as myfilei:
+            myfilei.write('\nMotti file missing:', mottifile['path'] + '/'+ mottifile['dominant'][1])
         
         new_end_yr=np.nan*np.ones(n_ditch_scens)
         motti_found = False
@@ -562,20 +587,20 @@ def call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_v
             else:
                 with open(outfile, "a") as myfile:
                     myfile.write('\nStand ' + str(stand) +'j=0: skipped simulation because subgroup not 2 or 3, or sfc>5') 
+                with open(outfilei, "a") as myfilei:
+                    myfilei.write('\nStand ' + str(stand) +'j=0: skipped simulation because subgroup not 2 or 3, or sfc>5') 
 
         else:
             with open(outfile, "a") as myfile:
                 myfile.write('\nError in stand number ' + str(stand)) 
+            with open(outfilei, "a") as myfilei:
+                myfilei.write('\nError in stand number ' + str(stand)) 
 
     else:
         with open(outfile, "a") as myfile:
             myfile.write('\nMottifile empty, stand number ' + str(stand))     
+        with open(outfilei, "a") as myfilei:
+            myfilei.write('\nMottifile empty, stand number ' + str(stand))     
         
-        
-        
+                
 
-    
-    
-    
-    
-    

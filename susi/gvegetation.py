@@ -117,7 +117,8 @@ class Gvegetation():
         #------------- classify and map pixels-------------------------------------------------------- 
 
         self.ix_spruce_mire = np.where(np.equal(species, 2))
-        self.ix_pine_bog = np.where(np.equal(species, 1))
+        #self.ix_pine_bog = np.where(np.equal(species, 1))
+        self.ix_pine_bog = np.where(np.equal(species, 1))|np.where(np.equal(species, 3))|np.where(np.equal(species, 4)) #changed 18th Oct 2023
         self.ix_open_peat = np.where(np.equal(species, 4))
         self.drain_s = 4      # x8 drainage status, default value 4
 

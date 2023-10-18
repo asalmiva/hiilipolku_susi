@@ -24,10 +24,71 @@ from numpy.ma import masked_array
 import pandas as pd
 
 #yksittaisen ncf tarkastelu
-scenarios=['Kuonanjoki_BAU_A', 'Kuonanjoki_BAU_B', 'Kuonanjoki_BIO_A', 'Kuonanjoki_BIO_B', 'Kuonanjoki_HII_A', 'Kuonanjoki_HII_B']
-#scenario=scenarios[0]#
+#scenarios=['Kuonanjoki_BAU_A', 'Kuonanjoki_BAU_B', 'Kuonanjoki_BIO_A', 'Kuonanjoki_BIO_B', 'Kuonanjoki_HII_A', 'Kuonanjoki_HII_B']
+#scenarios=['Sorvasranta_BAU_A', 'Sorvasranta_BAU_B', 'Sorvasranta_BIO_A', 'Sorvasranta_BIO_B', 'Sorvasranta_HII_A', 'Sorvasranta_HII_B']
+scenarios=['Halvanjoki_BAU_A', 'Halvanjoki_BAU_B', 'Halvanjoki_BIO_A', 'Halvanjoki_BIO_B', 'Halvanjoki_HII_A', 'Halvanjoki_HII_B']
 
-#resfol=r'/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/'
+#scenario=scenarios[0]#
+#mottifol=r'/scratch/project_2002470/HIILIPOLKU_data/'
+resfol=r'/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/'
+#scenario=scenarios[0]
+missing_stands_list=[]
+newrunslist=[]
+def check_resfiles(scenarios):
+    for scenario in scenarios:                    
+        mottifiles=glob(mottifol+scenario[:-6]+'/'+scenario+'/*.xls')
+        files=glob(resfol+scenario+'/*.nc')
+        resstands=[i[(len(resfol)+len(scenario)+1):-6] for i in files]
+        resstands = [*set(resstands)]
+        resstands.sort()
+        stands=[i[(len(mottifol)+len(scenario[:-6])+1+len(scenario)+1):-7] for i in mottifiles]
+        stands = [*set(stands)]
+        stands.sort()
+        if len(resstands)==len(stands):
+            print(scenario, " ok")
+        else:
+            missing_stands=list(set(stands) - set(resstands))   #list(set(common_ms).intersection(dtw_list))
+            missing_stands_list.append(missing_stands)
+            missing_stands_list.sort()
+            print(scenario, len(stands)-len(resstands),"missing stands: ", missing_stands) 
+            flines=[]
+            with open(resfol+scenario+'/'+scenario+'.txt','rt') as myfile:
+                for myline in myfile:
+                    flines.append(myline.rstrip('\n'))
+            nmlist=["i="+str(i) for i in range(len(stands))]
+            nmfound=[]
+            for line in flines:
+                for i in nmlist:
+                    if line.find(i)!=-1:
+                        nmfound.append(i)
+            nm_missing=list(set(nmlist) - set(nmfound))
+            nm_missing.sort()
+            print(nm_missing)
+            np.unique([nms[3:] for nms in nm_missing])
+            newruns=[int(nm) for nm in np.unique([nms[3:] for nms in nm_missing])]
+            print(','.join(str(i) for i in newruns)) #this to run_hiilipolku_csc_kuonan_baua_repair.sh file and sbatch ***.sh file 
+            newrunslist.append(scenario +" "+ ','.join(str(i) for i in newruns))
+    return missing_stands_list, newrunslist 
+
+def atomic_flatten(iterable, flattened):
+    try:
+        iter(iterable)
+        if type(iterable) not in [str, bytes]:
+            for item in iterable:
+                atomic_flatten(item, flattened)
+        else:
+            flattened.append(iterable)
+    except:
+        flattened.append(iterable)
+    return flattened
+
+#sorvar_ms,sorvas_newruns=check_resfiles(scenarios)
+#sorvas_ms=atomic_flatten(sorvar_ms,[])
+#sorvas_ms.sort()
+#sorvas_ms=[*set(sorvas_ms)]
+
+#
+#
 #files=glob(resfol+scenario+'/*.nc')
 #stands=[i[(len(resfol)+len(scenario)+1):-6] for i in files]
 #stands = [*set(stands)]
@@ -121,7 +182,7 @@ def get_ev_dscens(stand, scen):
     # Otetaan perkkisten vuosien poistettava vuosi talteen
     tuplat = pd.Series([], dtype=int)
     tup = 0
-    # Tsekataan, onko tapahtumissa perak vuosia ja poistetaan niistä jalkim
+    # Tsekataan, onko tapahtumissa perak vuosia ja poistetaan niista jalkim
     for v in range(0,len(vuodet)-1):
        if vuodet[v+1]-vuodet[v]==1:
           tuplat[tup]=vuodet[v+1]
@@ -186,22 +247,22 @@ def peat_ini_end_scaled(ff, dscen):
     endpeat =  np.zeros(cols)
     endpeatb =  np.zeros(cols)
     for sto in esoms[7:9]:
-        if type(ncf['esom']['Mass'][sto][dscen[ev]].mask)==np.ndarray:
+        if type(ncf['esom']['Mass'][sto][dscen].mask)==np.ndarray:
             indices=np.where(~ncf['esom']['Mass'][sto][dscen].mask)
             lastind=max(indices[0])
             endpeat += ncf['esom']['Mass'][sto][dscen,lastind, :]/10000. #pitais ottaa vika jossa on arvoja 
-        elif ~ncf['esom']['Mass'][sto][dscen[ev]].mask:
-            print(f,ev, "esom P1 mask  is false")
+        elif ~ncf['esom']['Mass'][sto][dscen].mask:
+            print("esom P1 mask  is false")
             print(ncf['esom']['Mass'][sto][dscen,:, :]/10000)
             #indices=np.where(~ncf['esom']['Mass'][sto][dscen].mask)
             #lastind=max(indices[0])
             endpeat += ncf['esom']['Mass'][sto][dscen,-1, :]/10000. #pitais ottaa vika jossa on arvoja 
-    if type(ncf['esom']['Mass'][esoms[9]][dscen[ev]].mask)==np.ndarray:
+    if type(ncf['esom']['Mass'][esoms[9]][dscen].mask)==np.ndarray:
         indices=np.where(~ncf['esom']['Mass'][esoms[9]][dscen].mask)
         lastind=max(indices[0])
         endpeatb = 120/190*ncf['esom']['Mass'][esoms[9]][dscen,lastind, :]/10000. #pitais ottaa vika jossa on arvoja 
-    elif ~ncf['esom']['Mass'][sto][dscen[ev]].mask:
-        print(f,ev, "esom P1 mask  is false")
+    elif ~ncf['esom']['Mass'][sto][dscen].mask:
+        print("esom P1 mask  is false")
         print(ncf['esom']['Mass'][sto][dscen,:, :]/10000)
         print(ncf['esom']['Mass'][sto][dscen,-1, :]/10000)
         #indices=np.where(~ncf['esom']['Mass'][sto][dscen].mask)
@@ -217,12 +278,12 @@ def peat_ini_end_scaled(ff, dscen):
         inimor += ncf['esom']['Mass'][sto][dscen,0, :]/10000.
     endmor =  np.zeros(cols)
     for sto in esoms[:7]:
-        if type(ncf['esom']['Mass'][sto][dscen[ev]].mask)==np.ndarray:
+        if type(ncf['esom']['Mass'][sto][dscen].mask)==np.ndarray:
             indices=np.where(~ncf['esom']['Mass'][sto][dscen].mask)
             lastind=max(indices[0])
             endmor += ncf['esom']['Mass'][sto][dscen,lastind, :]/10000. #pitais ottaa vika jossa on arvoja 
-        elif ~ncf['esom']['Mass'][sto][dscen[ev]].mask:
-            print(f,ev,sto, "esom  mask  is false")
+        elif ~ncf['esom']['Mass'][sto][dscen].mask:
+            print(sto, "esom  mask  is false")
             print(ncf['esom']['Mass'][sto][dscen,:, :]/10000)
             #indices=np.where(~ncf['esom']['Mass'][sto][dscen].mask)
             #lastind=max(indices[0])
@@ -995,24 +1056,28 @@ def checkres(scenario):
             if any(np.isnan((np.unique(p1.data)))):
                 print(f, ev)
                 problems.append(f+" "+ev+" esom p1 nan")
+                problem_stands.append(f)
             bal1=ncf['balance']['N']['to_water'][dscen[ev]]
             if any(np.isnan((np.unique(bal1.data)))):
                 print(f, ev)
                 problems.append(f+" "+ev+" balance N nan")
+                problem_stands.append(f)
         print(f, "loppuu", stands.index(f), "of ", len(stands))
+    problem_stands=[*set(problem_stands)]
+    problem_stands.sort()
     with open('/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/'+scenario+'_res_prob.txt', "a") as myfile:
         for item in problems:
             myfile.write("%s\n" % item)
     return problem_stands 
 
-scenarios=['Kuonanjoki_BAU_A', 'Kuonanjoki_BAU_B', 'Kuonanjoki_BIO_A', 'Kuonanjoki_BIO_B', 'Kuonanjoki_HII_A', 'Kuonanjoki_HII_B']
+#scenarios=['Kuonanjoki_BAU_A', 'Kuonanjoki_BAU_B', 'Kuonanjoki_BIO_A', 'Kuonanjoki_BIO_B', 'Kuonanjoki_HII_A', 'Kuonanjoki_HII_B']
 
-k_baua_prs=checkres(scenarios[0])
-k_baub_prs=checkres(scenarios[1])
-k_bioa_prs=checkres(scenarios[2])
-k_biob_prs=checkres(scenarios[3])
-k_hiia_prs=checkres(scenarios[4])
-k_hiib_prs=checkres(scenarios[5])
+#k_baua_prs=checkres(scenarios[0])
+#k_baub_prs=checkres(scenarios[1])
+#k_bioa_prs=checkres(scenarios[2])
+#k_biob_prs=checkres(scenarios[3])
+#k_hiia_prs=checkres(scenarios[4])
+#k_hiib_prs=checkres(scenarios[5])
 
 scenarios=['Sorvasranta_BAU_A', 'Sorvasranta_BAU_B', 'Sorvasranta_BIO_A', 'Sorvasranta_BIO_B', 'Sorvasranta_HII_A', 'Sorvasranta_HII_B']
 
@@ -1023,14 +1088,18 @@ s_biob_prs=checkres(scenarios[3])
 s_hiia_prs=checkres(scenarios[4])
 s_hiib_prs=checkres(scenarios[5])
 
-scenarios=['Halvanjoki_BAU_A', 'Halvanjoki_BAU_B', 'Halvanjoki_BIO_A', 'Halvanjoki_BIO_B', 'Halvanjoki_HII_A', 'Halvanjoki_HII_B']
+s_all_pr=s_baua_prs+s_baub_prs+s_bioa_prs+s_biob_prs+s_hiia_prs+s_hiib_prs
+s_all_pr = [*set(s_all_pr)]
+s_all_pr.sort()
 
-h_baua_prs=checkres(scenarios[0])
-h_baub_prs=checkres(scenarios[1])
-h_bioa_prs=checkres(scenarios[2])
-h_biob_prs=checkres(scenarios[3])
-h_hiia_prs=checkres(scenarios[4])
-h_hiib_prs=checkres(scenarios[5])
+#scenarios=['Halvanjoki_BAU_A', 'Halvanjoki_BAU_B', 'Halvanjoki_BIO_A', 'Halvanjoki_BIO_B', 'Halvanjoki_HII_A', 'Halvanjoki_HII_B']
+
+#h_baua_prs=checkres(scenarios[0])
+#h_baub_prs=checkres(scenarios[1])
+#h_bioa_prs=checkres(scenarios[2])
+#h_biob_prs=checkres(scenarios[3])
+#h_hiia_prs=checkres(scenarios[4])
+#h_hiib_prs=checkres(scenarios[5])
 
 
 def checkres_sorvas(scenario):
@@ -1146,12 +1215,21 @@ scenarios=['Sorvasranta_BAU_A', 'Sorvasranta_BAU_B', 'Sorvasranta_BIO_A', 'Sorva
 #standareas_hiia=get_areas(scenarios[4]);
 #standareas_hiib=get_areas(scenarios[5])
 
-standareas_baua=get_areas_prex(scenarios[0],s_baua_prs);
-standareas_baua=get_areas_prex(scenarios[0],s_baua_prs);
-standareas_baua=get_areas_prex(scenarios[0],s_baua_prs);
-standareas_baua=get_areas_prex(scenarios[0],s_baua_prs);
-standareas_baua=get_areas_prex(scenarios[0],s_baua_prs);
-standareas_baua=get_areas_prex(scenarios[0],s_baua_prs);
+#standareas_baua=get_areas_prex(scenarios[0],s_baua_prs);
+#standareas_baub=get_areas_prex(scenarios[1],s_baub_prs);
+#standareas_bioa=get_areas_prex(scenarios[2],s_bioa_prs);
+#standareas_biob=get_areas_prex(scenarios[3],s_biob_prs);
+#standareas_hiia=get_areas_prex(scenarios[4],s_hiia_prs);
+#standareas_hiib=get_areas_prex(scenarios[5],s_hiib_prs);
+
+standareas_baua=get_areas_prex(scenarios[0],s_all_pr);
+standareas_baub=get_areas_prex(scenarios[1],s_all_pr);
+standareas_bioa=get_areas_prex(scenarios[2],s_all_pr);
+standareas_biob=get_areas_prex(scenarios[3],s_all_pr);
+standareas_hiia=get_areas_prex(scenarios[4],s_all_pr);
+standareas_hiib=get_areas_prex(scenarios[5],s_all_pr);
+
+
 
 #baua_sto_scaled=get_hiili_scaled(scenarios[0]); 
 #baub_sto_scaled=get_hiili_scaled(scenarios[1]); 
@@ -1160,12 +1238,19 @@ standareas_baua=get_areas_prex(scenarios[0],s_baua_prs);
 #hiia_sto_scaled=get_hiili_scaled(scenarios[4]); 
 #hiib_sto_scaled=get_hiili_scaled(scenarios[5]); 
 
-baua_sto_scaled=get_hiili_scaled_prex(scenarios[0],s_baua_prs); 
-baub_sto_scaled=get_hiili_scaled_prex(scenarios[1],s_baua_prs); 
-bioa_sto_scaled=get_hiili_scaled_prex(scenarios[2],s_baua_prs);
-biob_sto_scaled=get_hiili_scaled_prex(scenarios[3],s_baua_prs); 
-hiia_sto_scaled=get_hiili_scaled_prex(scenarios[4],s_baua_prs); 
-hiib_sto_scaled=get_hiili_scaled_prex(scenarios[5],s_baua_prs); 
+#baua_sto_scaled=get_hiili_scaled_prex(scenarios[0],s_baua_prs); 
+#baub_sto_scaled=get_hiili_scaled_prex(scenarios[1],s_baua_prs); 
+#bioa_sto_scaled=get_hiili_scaled_prex(scenarios[2],s_baua_prs);
+#biob_sto_scaled=get_hiili_scaled_prex(scenarios[3],s_baua_prs); 
+#hiia_sto_scaled=get_hiili_scaled_prex(scenarios[4],s_baua_prs); 
+#hiib_sto_scaled=get_hiili_scaled_prex(scenarios[5],s_baua_prs); 
+
+baua_sto_scaled=get_hiili_scaled_prex(scenarios[0],s_all_pr); 
+baub_sto_scaled=get_hiili_scaled_prex(scenarios[1],s_all_pr); 
+bioa_sto_scaled=get_hiili_scaled_prex(scenarios[2],s_all_pr);
+biob_sto_scaled=get_hiili_scaled_prex(scenarios[3],s_all_pr); 
+hiia_sto_scaled=get_hiili_scaled_prex(scenarios[4],s_all_pr); 
+hiib_sto_scaled=get_hiili_scaled_prex(scenarios[5],s_all_pr); 
 
 #standareas_baua=get_areas_prex(scenarios[0],s_baua_prs)
 #standareas_baub=get_areas_sorvas(scenarios[1]);
@@ -1284,12 +1369,13 @@ print(scenarios[5],"mor co2eq", hiib_co2eq)
 #hiia=get_NP(scenarios[4]);
 #hiib=get_NP(scenarios[5]);
 
-baua=get_NP_prex(scenarios[0],s_baua_prs); 
-baub=get_NP_prex(scenarios[0],s_baua_prs); 
-bioa=get_NP_prex(scenarios[0],s_baua_prs);
-biob=get_NP_prex(scenarios[0],s_baua_prs); 
-hiia=get_NP_prex(scenarios[0],s_baua_prs);
-hiib=get_NP_prex(scenarios[0],s_baua_prs);
+#baua=get_NP_prex(scenarios[0],s_baua_prs); 
+baua=get_NP_prex(scenarios[0],s_all_pr); 
+baub=get_NP_prex(scenarios[1],s_all_pr); 
+bioa=get_NP_prex(scenarios[2],s_all_pr);
+biob=get_NP_prex(scenarios[3],s_all_pr); 
+hiia=get_NP_prex(scenarios[4],s_all_pr);
+hiib=get_NP_prex(scenarios[5],s_all_pr);
 
 print(scenarios[0], "nsum", sum(baua['nsum']))
 print(scenarios[1], "nsum", sum(baub['nsum']))
@@ -1335,7 +1421,7 @@ print(scenarios[5],"p kg/ha/yr", sum(hiib['psum'])/sum(standareas_hiib)/50)
 #print("check res", scenarios[5])
 #checkres_sorvas(scenarios[5])
 
-
+"""
 print("kuonanjoki")
 scenarios=['Kuonanjoki_BAU_A', 'Kuonanjoki_BAU_B', 'Kuonanjoki_BIO_A', 'Kuonanjoki_BIO_B', 'Kuonanjoki_HII_A', 'Kuonanjoki_HII_B']
 
@@ -1703,6 +1789,7 @@ print(scenarios[5],"p kg/ha/yr", sum(hiib['psum'])/sum(standareas_hiib)/50)
 
 #inipeat, inimor, endpeat, endmor = peat_ini_end(ff,0) # soil mass, kg/m2, peat = peat layers, mor = upper humus & litter layers
 
+"""
 
 #C -> CO2 muunnoskerroin:
 #c_to_co2 = 44/12.0

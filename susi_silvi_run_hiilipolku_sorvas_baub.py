@@ -364,7 +364,7 @@ def call_local_susi_motti_silvi_list(i):
 
 
                     with open(outfile, "a") as myfile:
-                        myfile.write('\n' + 'j=0: ' + str(start_yr) + '...' + str(new_end_yr))  
+                        myfile.write('Stand=' + str(kuviolista[i]) + ', i=' + str(i) + ' j=0 n=0: ' + str(start_yr) + '...' + str(new_end_yr))  
                         
                     end_reached = check_end(n_ditch_scens, new_end_yr, end_yr)
                     
@@ -424,7 +424,7 @@ def call_local_susi_motti_silvi_list(i):
                     
                     start_yr_arr = start_yr + simYearSum
 
-                    new_end_yr, motti_found = call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_vol, start_yr_ini, n_ditch_scens, vol_after[j], sfc_spec, ash_year=ash_year, vol_ini_0=vol_ini_0)    
+                    new_end_yr, motti_found = call_susi_help(kuviot, stand, j, end_yr, start_yr_arr, wdata, sarka, break_vol, start_yr_ini, n_ditch_scens, np.nan, sfc_spec, ash_year=ash_year, vol_ini_0=vol_ini_0)  #vol_after[j]  
 
                     with open(outfile, "a") as myfile:
                         myfile.write('\n' + 'j=' + str(j) + ': ' + str(start_yr_arr) + '...' + str(new_end_yr))  

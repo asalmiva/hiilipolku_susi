@@ -14,6 +14,8 @@ import pandas as pd
 #unzip -d Sorvasranta Sorvasranta_220323.zip
 #unzip -d Kuonanjoki Kuonanjoki_220323.zip
 #unzip -d Halvanjoki Halvanjoki_220323.zip
+mkdir Neuvontaan
+mkdir Halvanjoki
 
 mkdir Sorvasranta/Sorvasranta_BAU_A;mkdir Sorvasranta/Sorvasranta_BAU_B; mkdir Sorvasranta/Sorvasranta_BIO_A;mkdir Sorvasranta/Sorvasranta_BIO_B;
 mkdir Sorvasranta/Sorvasranta_HII_A;mkdir Sorvasranta/Sorvasranta_HII_B;
@@ -52,6 +54,7 @@ cp Halvanjoki/Halvanjoki_HII_B.xlsx Halvanjoki/Halvanjoki_HII_B/motti/
 #in python 
 scenarios=['Sorvasranta_BAU_A', 'Sorvasranta_BAU_B', 'Sorvasranta_BIO_A', 'Sorvasranta_BIO_B', 'Sorvasranta_HII_A', 'Sorvasranta_HII_B']
 sheets=['kuviot', 'puustot', 'poistumat', 'tapahtumat', 'kasvut']
+sheetsorg=['kuviot','kulut','tulot', 'tapahtumat','poistumat','puustot', 'kasvut']
 
 for scen in scenarios:
     for sh in sheets:
@@ -59,6 +62,18 @@ for scen in scenarios:
         df = pd.read_excel(ifile, sheet_name=sh)
         df.to_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Sorvasranta/'+scen+'/motti/'+scen+'_'+sh+'.csv', sep=';', encoding='latin1')
 
+#####################
+for scen in scenarios:
+    for sh in sheets:
+        ifile = r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/Halvanjoki/'+scen+'/motti/'+'tila6tarkistetuinkasittelyohjein.xlsx'
+        df = pd.read_excel(ifile, sheet_name=sh)
+        if sh != 'kuviot':
+            dfsc=df[df['sken']==scen[-5:].lower()]
+            dfsc.to_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/Halvanjoki/'+scen+'/motti/'+scen+'_'+sh+'.csv', sep=';', encoding='latin1')
+        else:
+            df.to_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/Halvanjoki/'+scen+'/motti/'+scen+'_'+sh+'.csv', sep=';', encoding='latin1')
+
+############
 create_motti_files_silvi('hiilipolku', scenarios[0])
 create_motti_files_silvi('hiilipolku', scenarios[1]);create_motti_files_silvi('hiilipolku', scenarios[2]);create_motti_files_silvi('hiilipolku', scenarios[3]);create_motti_files_silvi('hiilipolku', scenarios[4]);create_motti_files_silvi('hiilipolku', scenarios[5])
 
@@ -152,17 +167,24 @@ def create_motti_files_silvi(project, scen, maku=None):         # Huom! ohje>1
     '''
     
     
-    mottifolder = r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/'
+    ###mottifolder = r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/'
+    mottifolder = r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/'+scen[:-6]+'/'+scen+'/'
         
     outfile = mottifolder + '/out.txt'
     
     project = 'hiilipolku'
     
-    kuviot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_kuviot.csv', encoding='latin1', sep=';')
-    puustot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_puustot.csv', encoding='latin1', sep=';')
-    poistumat = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_poistumat.csv', encoding='latin1', sep=';')
-    tapahtumat = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_tapahtumat.csv', encoding='latin1', sep=';', index_col=False)
-    tulot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_kasvut.csv', encoding='latin1', sep=';')
+    ##kuviot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_kuviot.csv', encoding='latin1', sep=';')
+    ##puustot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_puustot.csv', encoding='latin1', sep=';')
+    ##poistumat = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_poistumat.csv', encoding='latin1', sep=';')
+    ##tapahtumat = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_tapahtumat.csv', encoding='latin1', sep=';', index_col=False)
+    ##tulot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_kasvut.csv', encoding='latin1', sep=';')
+    
+    kuviot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_kuviot.csv', encoding='latin1', sep=';')
+    puustot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_puustot.csv', encoding='latin1', sep=';')
+    poistumat = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_poistumat.csv', encoding='latin1', sep=';')
+    tapahtumat = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_tapahtumat.csv', encoding='latin1', sep=';', index_col=False)
+    tulot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Neuvontaan/'+scen[:-6]+'/'+scen+'/motti/'+scen+'_kasvut.csv', encoding='latin1', sep=';')
     
     
     if (project == 'life') | (project =='vmi') | (project =='hiilipolku'):
@@ -443,11 +465,11 @@ def create_motti_files_silvi(project, scen, maku=None):         # Huom! ohje>1
             #sdata0 = sdata0.append([sdata0.iloc[0]], ignore_index=True) # Rivi menee taulukon loppuun
             nolla_df=pd.DataFrame([sdata0.iloc[0]])
             sdata0 = pd.concat((sdata0,nolla_df),axis=0, ignore_index=True) # Rivi menee taulukon loppuun
-            sdata0['AIKA'][len(sdata0)-1] = 0
+            sdata0['AIKA'][len(sdata0)-1] = 0 # tehdaan alkuun 0 vuosi
             
-            sdata0 = sdata0.sort_values(by=['AIKA'])
-            sdata0 = sdata0.reset_index(drop=True)
-            sdata0['Age'][0] = sdata0['Age'][0]-(sdata0['AIKA'][1] - sdata0['AIKA'][0])
+            sdata0 = sdata0.sort_values(by=['AIKA']) #sorattaan jotta 0-vuosi alkuun
+            sdata0 = sdata0.reset_index(drop=True) #resetoidaan indeksi
+            sdata0['Age'][0] = sdata0['Age'][0]-(sdata0['AIKA'][1] - sdata0['AIKA'][0]) #tehdaan n-vuodelle oikea ika
     
             
             # if (sdata0['Age'][0]<0) | (sdata0['Age'][1]<0):
@@ -458,16 +480,16 @@ def create_motti_files_silvi(project, scen, maku=None):         # Huom! ohje>1
                 #     myfile.write('\nSecond row age = 0 !!! i = ' +str(i) + 'kuvio: '+str(kuviolista[i]))
             
             
-            sdata0['TotVol'][0] = tulotdata['volume0'][0] 
+            sdata0['TotVol'][0] = tulotdata['volume0'][0] #luodulle aika=0 riville tilavuus tulotdatan vuosittaisita ilavuusista
             
             # Päivitetään muut komponentit
             for c in range(0,len(comps)):
-                if sdata0.loc[0,comps[c]]>0:
+                if sdata0.loc[0,comps[c]]>0: #jos arvo on yli 0
                     sdata0.loc[0,comps[c]] = sdata0['TotVol'][0]/sdata0['TotVol'][1]*sdata0.loc[1, comps[c]]
             
             # Päivitetään N
             if sdata0['tuotosKuolleet'][0] < sdata0['TotVol'][0]:
-                sdata0.loc[0,'N'] = (1 + sdata0['tuotosKuolleet'][0]/sdata0['TotVol'][0])*sdata0['N'][0]        
+                sdata0.loc[0,'N'] = (1 + sdata0['tuotosKuolleet'][0]/sdata0['TotVol'][0])*sdata0['N'][0]       ##miten tama on laskettu 
                      
     
             repair = 1
@@ -569,10 +591,10 @@ def create_motti_files_silvi(project, scen, maku=None):         # Huom! ohje>1
         
         for k in range(0,len(sdata0)):
             
-            if (sdata0.loc[k,'TotVol']<0.5) | (np.isnan(sdata0.loc[k,'TotVol']) == True):
+            if (sdata0.loc[k,'TotVol']<0.5) | (np.isnan(sdata0.loc[k,'TotVol']) == True): #voi olla 0.01 tilavuuksiakin
                 
                 if k < len(sdata0)-1:
-                    sdata0.loc[k,'TotVol'] = max(0.5, 0.1*sdata0.loc[k+1,'TotVol']) # Lisätään totvol nollien tilalle muu pieni luku (0.001 oli liian pieni, kasvu ei lähtenyt käyntiin, joten kasvatettu 0.2:een)
+                    sdata0.loc[k,'TotVol'] = max(0.5, 0.1*sdata0.loc[k+1,'TotVol']) # Lisätään totvol nollien tilalle muu pieni luku (0.001 oli liian pieni, kasvu ei lähtenyt käyntiin, joten kasvatettu 0.2:een) paitsi et tulee 0.5
                 else:
                     sdata0.loc[k,'TotVol'] = 0.5
                     

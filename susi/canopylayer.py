@@ -57,7 +57,8 @@ class Canopylayer():
         self.stems = np.zeros(ncols, dtype=float)                              # stocking number of trees per ha
 
         self.basalarea = np.zeros(ncols, dtype=float)                          # basal area in the canopy layer m2/tree
-        self.biomass = np.zeros(ncols, dtype=float)                            # total canopy layer biomass excluding leaves kg/tree
+        self.biomass = np.zeros(ncols, dtype=float)                            # total canopy layer biomass
+        self.biomass_noleaves = np.zeros(ncols, dtype=float)                   # total canopy layer biomass excluding leaves kg/tree
         self.n_demand = np.zeros(ncols, dtype=float)                           # N demand exluding leaves kg/tree/yr
         self.p_demand = np.zeros(ncols, dtype=float)                           # P demand exluding leaves kg/tree/yr 
         self.k_demand = np.zeros(ncols, dtype=float)                           # K demand exluding leaves kg/tree/yr
@@ -119,21 +120,24 @@ class Canopylayer():
         
         # ---------- Initial values from age -------------------------------------------------------
         for m in nlyrs:
-            if m > 0:
-                self.biomass[ixs[m]] = self.allodic[m].allometry_f['ageToBm'](self.agearr[ixs[m]])        # stem biomass from age kg/tree         
-                self.stems[ixs[m]] = self.allodic[m].allometry_f['bmToStems'](self.biomass[ixs[m]])*self.remaining_share[ixs[m]]  # number of stems /ha from the biomass of tree       
+            if m > 0: 
+                #self.biomass[ixs[m]] = self.allodic[m].allometry_f['ageToBm'](self.agearr[ixs[m]])        # biomass from age kg/tree         
+                self.biomass[ixs[m]] = self.allodic[m].allometry_f['ageToBmNoLeaves'](self.agearr[ixs[m]])        # biomass from age kg/tree         
+                self.biomass_noleaves[ixs[m]] = self.allodic[m].allometry_f['ageToBmNoLeaves'](self.agearr[ixs[m]])        # stem biomass from age kg/tree         
+                self.stems[ixs[m]] = self.allodic[m].allometry_f['bmToStems'](self.biomass_noleaves[ixs[m]])*self.remaining_share[ixs[m]]  # number of stems /ha from the biomass of tree       
 
                 self.basalarea[ixs[m]] = self.allodic[m].allometry_f['ageToBa'](self.agearr[ixs[m]])      # stem basal area from age m2/tree  
                 self.hdom[ixs[m]] = self.allodic[m].allometry_f['ageToHdom'](self.agearr[ixs[m]])         # dominant height m
-                self.leafarea[ixs[m]] = self.allodic[m].allometry_f['bmToLAI'](self.biomass[ixs[m]])*nut_stat[ixs[m]]  # one sided LAI from the stem biomass M2/m2/tree
+                self.leafarea[ixs[m]] = self.allodic[m].allometry_f['bmToLAI'](self.biomass_noleaves[ixs[m]])*nut_stat[ixs[m]]  # one sided LAI from the stem biomass M2/m2/tree
                 self.leafmass[ixs[m]] = self.allodic[m].allometry_f['ageToLeaves'](self.agearr[ixs[m]])*nut_stat[ixs[m]]
                 self.species[ixs[m]] = self.allodic[m].sp
                 #self.volume[ixs[m]] = self.allodic[m].allometry_f['ageToVol'](self.agearr[ixs[m]])         # stem volume m3/tree
-                self.volume[ixs[m]] = self.allodic[m].allometry_f['bmToVol'](self.biomass[ixs[m]])         # stem volume m3/tree
+                self.volume[ixs[m]] = self.allodic[m].allometry_f['bmToVol'](self.biomass_noleaves[ixs[m]])         # stem volume m3/tree
                 
-                self.basNdemand[ixs[m]] = self.allodic[m].allometry_f['bmToNLeafDemand'](self.biomass[ixs[m]])
-                self.basPdemand[ixs[m]] = self.allodic[m].allometry_f['bmToPLeafDemand'](self.biomass[ixs[m]])
-                self.basKdemand[ixs[m]] = self.allodic[m].allometry_f['bmToKLeafDemand'](self.biomass[ixs[m]])
+                self.basNdemand[ixs[m]] = self.allodic[m].allometry_f['bmToNLeafDemand'](self.biomass_noleaves[ixs[m]])
+                self.basPdemand[ixs[m]] = self.allodic[m].allometry_f['bmToPLeafDemand'](self.biomass_noleaves[ixs[m]])
+                self.basKdemand[ixs[m]] = self.allodic[m].allometry_f['bmToKLeafDemand'](self.biomass_noleaves[ixs[m]])
+                print("biomas_noleaves_ixm",self.biomass_noleaves[ixs[m]])
 
     def update(self, bm):
         
@@ -144,18 +148,19 @@ class Canopylayer():
         for m in self.nlyrs:
             if m > 0:
                 #print ('**********************')
-                #print (np.round(np.mean(self.allodic[m].allometry_f['bmToVol'](bm[ixs[m]])*self.stems),2))
-                #print (np.round(np.mean(self.allodic[m].allometry_f['ageToVol'](self.agearr[ixs[m]])*self.stems), 2))
-                #print ('vol')
-                # print (self.volume)
-                # print ('n stems')
-                # print (self.stems)
+                print (np.round(np.mean(self.allodic[m].allometry_f['bmToVol'](bm[ixs[m]])*self.stems),2))
+                print (np.round(np.mean(self.allodic[m].allometry_f['ageToVol'](self.agearr[ixs[m]])*self.stems), 2))
+                print ('vol in update alussa')
+                print (self.volume)
+                print ('in update alussa n stems')
+                print (self.stems)
                 #print ('**********************')
                 
                 self.stems[ixs[m]] = self.allodic[m].allometry_f['bmToStems'](bm[ixs[m]])*self.remaining_share[ixs[m]]
                 
                 self.basalarea[ixs[m]] = self.allodic[m].allometry_f['bmToBa'](bm[ixs[m]]) 
                 self.biomass[ixs[m]] = bm[ixs[m]] 
+                self.biomass_noleaves[ixs[m]] = bm[ixs[m]] 
                 self.hdom[ixs[m]] = self.allodic[m].allometry_f['bmToHdom'](bm[ixs[m]]) 
                 self.leafarea[ixs[m]] = self.allodic[m].allometry_f['bmToLAI'](bm[ixs[m]]) 
                 self.leafmass[ixs[m]] = self.allodic[m].allometry_f['bmToLeafMass'](bm[ixs[m]]) 
@@ -186,10 +191,10 @@ class Canopylayer():
                 self.basPdemand[ixs[m]] = self.allodic[m].allometry_f['bmToPLeafDemand'](bm[ixs[m]])
                 self.basKdemand[ixs[m]] = self.allodic[m].allometry_f['bmToKLeafDemand'](bm[ixs[m]])
                 self.agearr[ixs[m]] = self.agearr[ixs[m]] + 1  
-                # print ('vol')
-                # print (self.volume)
-                # print ('n stems')
-                # print (self.stems)
+                print ('in update lopuksi vol')
+                print (self.volume)
+                print ('in update n stems')
+                print (self.stems)
 
     def assimilate(self, forc, wt, afp, previous_nut_stat, nut_stat, lai_above):
         """
@@ -222,12 +227,16 @@ class Canopylayer():
         lai_above = lai_above*2                                                # lai_above is updated in stand object        
         self.NPP, self.NPP_pot = assimilation_yr(self.photopara, forc, wt, afp,
                                        self.leafarea*2 * self.stems, lai_above)     # double sided LAI required                     
-
+        #self.NPP, self.NPP_pot = assimilation_yr(self.photopara, forc, wt, afp,
+        #                               self.leafarea*2, lai_above)     # double sided LAI required                     
+        print(self.name,'in assimilate nstems', self.stems,'in assimilate, npp', self.NPP)
         self.NPP = self.NPP * nut_stat / self.stems  * 1.1                     # returned back to tree basis unit
         self.NPP_pot = self.NPP_pot * nut_stat / self.stems * 1.1               # returned back to tree basis units
-        
-        bm_increment = self.NPP
-        bm = self.biomass
+        print(self.name,'NPP per tree',self.NPP)
+        bm_increment = self.NPP 
+        #bm = self.biomass_noleaves # tahan muutos bm noleaves #testi 280923
+        ##bm = self.biomass_noleaves # sittenkin näin
+        bm = self.biomass #self.biomass is bm no leaves
 
         current_leafmass = self.leafmass
         
@@ -247,47 +256,53 @@ class Canopylayer():
                 
                 self.finerootlitter[ixs[m]] = self.allodic[m].allometry_f['bmToFinerootLitter'](bm[ixs[m]]) 
                 self.woodylitter[ixs[m]] = self.allodic[m].allometry_f['bmToWoodyLitter'](bm[ixs[m]]) 
-        """
+                #self.finerootlitter[ixs[m]] = self.allodic[m].allometry_f['bmWithLeavesToFinerootLitter'](bm[ixs[m]]) 
+                #self.woodylitter[ixs[m]] = self.allodic[m].allometry_f['bmWithLeavesToWoodyLitter'](bm[ixs[m]]) 
+        
         if self.name=='dominant':
             print ('ooooooooooooooooooooooooo')
             print (self.name, np.mean(self.agearr))
-            print (np.round(np.mean(self.NPP),2), 'npp' )
-            print (np.round(np.mean(self.C_consumption),2), 'c cons')
-            print (np.round(np.mean(self.finerootlitter), 2),'fr litter')
-            print (np.round(np.mean(self.woodylitter),2),'woody l')
-       """    
+            print (np.round(np.mean(self.NPP),8), 'npp' )
+            print (np.round(np.mean(self.C_consumption),8), 'c cons')
+            print (np.round(np.mean(self.finerootlitter), 8),'fr litter')
+            print (np.round(np.mean(self.woodylitter),8),'woody l')
+           
         
         
         delta_bm_noleaves = self.NPP - self.C_consumption - self.finerootlitter  - self.woodylitter 
         self.leafmass = self.new_lmass
         vol_ini =  self.volume.copy() 
-        """
+        #"""
         if self.name=='dominant': 
             print (np.round(np.mean(self.biomass),2), 'biomass ini' )
+            print (np.round(np.mean(self.biomass_noleaves),2), 'biomass_noleaves ini' )
             print (np.round(np.mean(self.volume*self.stems),2), 'volume ini' )
             print (np.round(np.mean(self.stems),2), 'stems ini' )
             print (np.round(np.mean(self.allodic[1].allometry_f['bmToVol'](bm)*self.stems),2))
-            #print (np.round(np.mean(self.allodic[1].allometry_f['ageToVol'](self.agearr)*self.stems), 2))
-        """
+            print (np.round(np.mean(self.allodic[1].allometry_f['ageToVol'](self.agearr)*self.stems), 2)) #otettu kommentoitnti pois hetksellisesti
+            print("delta bm noleaves",delta_bm_noleaves)
+        #"""
+        #self.update(self.biomass_noleaves + np.maximum(delta_bm_noleaves,0.0))
         self.update(self.biomass + np.maximum(delta_bm_noleaves,0.0))
         
-        #if self.name=='dominant': print (np.round(np.mean(delta_bm_noleaves),2), 'delta no leaves' )                
+        if self.name=='dominant': print (np.round(np.mean(delta_bm_noleaves),2), 'delta no leaves' )                
         
         self.volumegrowth = self.volume - vol_ini
-        """
+        #"""
         if self.name=='dominant':
             print (np.round(np.mean(self.volumegrowth*self.stems),2), 'volumegrowth')
             print (np.round(np.mean(self.biomass),2), 'biomass after' )
+            print (np.round(np.mean(self.biomass_noleaves),2), 'biomass no leaves after' )
             print (np.round(np.mean(self.volume*self.stems),2), 'volume after' )
             print (np.round(np.mean(self.stems),2), 'stems after' )
-        """
+        #"""
         
     def leaf_dynamics(self, bm, bm_increment, current_leafmass, previous_nut_stat,\
                       nut_stat, agenow, allometry_f, species, printOpt=False):
         """
         input:
-             bm, current biomass, array, kg/tree without leaves
-             bm_increment, array, total NPP kg/tree
+             bm, current biomass, array, kg/tree without leaves ### 
+             bm_increment, array, total NPP kg/tree #added 18th oct 23. npp(includes leaves
              incoming columns are of single tree species canopy layers 
         """
         #******** Parameters *****************
@@ -314,14 +329,16 @@ class Canopylayer():
         n = len(nut_stat)
         #************ Biomass and litter**************
         """ Change units to /tree here"""
-        leafbase0 =  allometry_f['bmToLeafMass'](bm)                           # table growth leaf mass in the beginning of timestep
-        leafbase1 = allometry_f['bmToLeafMass'](bm + bm_increment)             # table growth leaf mass in the end of timestep
+        #leafbase0 =  allometry_f['bmToLeafMass'](bm)                           # table growth leaf mass in the beginning of timestep
+        leafbase0 =  allometry_f['bmWithLeavesToLeafMass'](bm+current_leafmass)                           # table growth leaf mass in the beginning of timestep
+        #leafbase1 = allometry_f['bmToLeafMass'](bm + bm_increment)             # table growth leaf mass in the end of timestep
+        leafbase1 = allometry_f['bmWithLeavesToLeafMass'](bm+current_leafmass + bm_increment)             # table growth leaf mass in the end of timestep
         leafmass = leafbase1 * nut_stat                                        # actual leaf mass
     
         
         #-------------------------------------------------
-        leafmax = leafbase1 * 1.5
-        leafmin = leafbase1 / 1.5
+        leafmax = leafbase1 * 1.5 #
+        leafmin = leafbase1 / 1.5 #
         
         net_ch = leafbase1-leafbase0
         gr_demand = leafmass - current_leafmass

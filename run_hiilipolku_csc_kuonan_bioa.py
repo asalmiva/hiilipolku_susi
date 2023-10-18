@@ -5,16 +5,59 @@ Created on Tue Nov 17 09:38:08 2020
 """
 
 import sys
+import os
+import pandas as pd
 
 i = int(sys.argv[1])
 
-from susi_silvi_run_hiilipolku_kuonan_bioa import call_local_susi_motti_silvi_list
+from susi_silvi_run_hiilipolku_ import call_local_susi_motti_silvi_list
+#from susi_silvi_run_hiilipolku_kuonan_bioa import call_local_susi_motti_silvi_list
 
-call_local_susi_motti_silvi_list(i) # i=0-99
-call_local_susi_motti_silvi_list(i+100) # i=100-199
-call_local_susi_motti_silvi_list(i+200) # i=200-299
-call_local_susi_motti_silvi_list(i+300) # i=300-399
-call_local_susi_motti_silvi_list(i+400) # i=400-499
-call_local_susi_motti_silvi_list(i+500) # i=500-599
-call_local_susi_motti_silvi_list(i+600) # i=600-699
-call_local_susi_motti_silvi_list(i+700) # i=700-799
+def get_paths():
+    
+    susiPath = r'/scratch/project_2002470/SUSI_HIILIPOLKU/susi/' # susi python files path
+    outPath=r'/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/Kuonanjoki_BIO_A/' # outputs path
+    wpath = r'/scratch/project_2002470/SUSI_HIILIPOLKU/inputs/' # weather data path
+    #mottifolder = r'/scratch/project_2002470/SUSI_HIILIPOLKU/Kuonanjoki_BIO_A/'
+    mottipath = r'/scratch/project_2002470/HIILIPOLKU_data/Kuonanjoki/Kuonanjoki_BIO_A/'
+    outfile = r'/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/Kuonanjoki_BIO_A/Kuonanjoki_BIO_A.txt'    
+    outfol=r'/scratch/project_2002470/SUSI_HIILIPOLKU_outputs/' # outputs path
+    if not os.path.exists(outfol):
+        os.mkdir(outfol)    
+    if not os.path.exists(outPath):
+        os.mkdir(outPath)    
+    return susiPath, wpath, mottipath, outPath, outfile
+
+def get_motti_data():
+        
+    kuviot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Kuonanjoki/Kuonanjoki_BIO_A/motti/Kuonanjoki_BIO_A_kuviot.csv', encoding='latin1', sep=';')
+    puustot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Kuonanjoki/Kuonanjoki_BIO_A/motti/Kuonanjoki_BIO_A_puustot.csv', encoding='latin1', sep=';')
+    poistumat = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Kuonanjoki/Kuonanjoki_BIO_A/motti/Kuonanjoki_BIO_A_poistumat.csv', encoding='latin1', sep=';')
+    tapahtumat = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Kuonanjoki/Kuonanjoki_BIO_A/motti/Kuonanjoki_BIO_A_tapahtumat.csv', encoding='latin1', sep=';', index_col=False)
+    tulot = pd.read_csv(r'/scratch/project_2002470/HIILIPOLKU_data/Kuonanjoki/Kuonanjoki_BIO_A/motti/Kuonanjoki_BIO_A_kasvut.csv', encoding='latin1', sep=';')
+    
+    return kuviot, puustot, poistumat, tapahtumat, tulot
+
+def get_inputs():
+        
+    wdata='kuonanjoki_weathercont.csv' #'kuonanjoki_weather.csv' #'puruvesi_saa_19810101-2020062.csv' #'halvansuo_weather.csv' #'kuonanjoki_weather.csv'# # # Weather data file name
+    sarka = 40. # Ditch spacing
+    n_ditch_scens = 4 # Number of ditch scenarios 
+    start_yr_ini = 1991 # Initial starting year
+    totSimYears=50 # Total lenght of simulations, in years
+    
+    return wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears
+
+kuviot, puustot, poistumat, tapahtumat, tulot = get_motti_data()    
+wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears = get_inputs() 
+susiPath, wpath, mottipath, folderName, outfile = get_paths()
+    
+call_local_susi_motti_silvi_list(i,kuviot, puustot, poistumat, tapahtumat, tulot,wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears,susiPath, wpath, mottipath, folderName, outfile) # i=0-99
+#call_local_susi_motti_silvi_list(i+100,kuviot, puustot, poistumat, tapahtumat, tulot,wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears,susiPath, wpath, mottipath, folderName, outfile) # i=100-199
+#call_local_susi_motti_silvi_list(i+200,kuviot, puustot, poistumat, tapahtumat, tulot,wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears,susiPath, wpath, mottipath, folderName, outfile) # i=200-299
+#call_local_susi_motti_silvi_list(i+300,kuviot, puustot, poistumat, tapahtumat, tulot,wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears,susiPath, wpath, mottipath, folderName, outfile) # i=300-399
+#call_local_susi_motti_silvi_list(i+400,kuviot, puustot, poistumat, tapahtumat, tulot,wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears,susiPath, wpath, mottipath, folderName, outfile) # i=400-499
+#call_local_susi_motti_silvi_list(i+500,kuviot, puustot, poistumat, tapahtumat, tulot,wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears,susiPath, wpath, mottipath, folderName, outfile) # i=500-599
+#call_local_susi_motti_silvi_list(i+600,kuviot, puustot, poistumat, tapahtumat, tulot,wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears,susiPath, wpath, mottipath, folderName, outfile) # i=600-699
+#call_local_susi_motti_silvi_list(i+700,kuviot, puustot, poistumat, tapahtumat, tulot,wdata, sarka, n_ditch_scens, start_yr_ini, totSimYears,susiPath, wpath, mottipath, folderName, outfile) # i=700-799
+

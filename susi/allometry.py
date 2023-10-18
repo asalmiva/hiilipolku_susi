@@ -180,7 +180,7 @@ class Allometry():
         ageToBa = interp1d(df['age'].values,df['BA'].values,fill_value='extrapolate')
         ageToBm = interp1d(df['age'].values,df['bm'].values, fill_value='extrapolate')
         ageToBmNoLeaves = interp1d(df['age'].values,df['bm_noleaves'].values, fill_value='extrapolate')
-        ageToStems = interp1d(df['age'].values,df['N'].values, fill_value='extrapolate')
+        ageToStems = interp1d(df['age'].values,df['N'].values, fill_value=(df['N'].values[0], df['N'].values[-1]), bounds_error=False)
         ageToLeaves = interp1d(df['age'].values, df['leaves'].values, fill_value='extrapolate')
         ageToFineRoots = interp1d(df['age'].values, df['roots_fine'].values, fill_value='extrapolate')
         ageToBranchLiving = interp1d(df['age'].values, df['branch_living'].values, fill_value='extrapolate')
@@ -202,10 +202,12 @@ class Allometry():
         bmToVol= interp1d(df['bm_noleaves'].values,df['vol'].values, fill_value='extrapolate')
         
         bmToBa= interp1d(df['bm_noleaves'].values,df['BA'].values, fill_value='extrapolate')    
-        bmToLeafMass = interp1d(df['bm_noleaves'].values, df['leaves'].values, fill_value='extrapolate')
+        bmToLeafMass = interp1d(df['bm_noleaves'].values, df['leaves'].values, fill_value='extrapolate') 
+        ###bmToLeafMass = interp1d(df['bm'].values, df['leaves'].values, fill_value='extrapolate') #testi 280923
+        bmWithLeavesToLeafMass = interp1d(df['bm'].values, df['leaves'].values, fill_value='extrapolate') #changed 18thh oct 23
         bmToLAI = interp1d(df['bm_noleaves'].values, df['leaves'].values* sla[spe]/10000.,  fill_value='extrapolate')
         bmToHdom = interp1d(df['bm_noleaves'].values,df['hdom'].values, fill_value='extrapolate')
-        bmToStems = interp1d(df['bm_noleaves'].values, df['N'].values, fill_value='extrapolate')
+        bmToStems = interp1d(df['bm_noleaves'].values, df['N'].values, fill_value=(df['N'].values[0], df['N'].values[-1]), bounds_error=False)
         
  
         bmToFineRoots = interp1d(df['bm_noleaves'].values, df['roots_fine'].values, fill_value='extrapolate')
@@ -254,6 +256,10 @@ class Allometry():
         bmToDbm = interp1d(ageToBmNoLeaves(a_arr), dbm, fill_value='extrapolate')   # from biomass to biomass change 
         bmToFinerootLitter = interp1d(ageToBmNoLeaves(a_arr), fineroot_litter, fill_value='extrapolate' )    
         bmToWoodyLitter = interp1d(ageToBmNoLeaves(a_arr), woody_litter, fill_value='extrapolate' )
+        ##bmToFinerootLitter = interp1d(ageToBm(a_arr), fineroot_litter, fill_value='extrapolate' )    #testi
+        ##bmToWoodyLitter = interp1d(ageToBm(a_arr), woody_litter, fill_value='extrapolate' ) #testi
+        #bmWithLeavesToFinerootLitter = interp1d(ageToBm(a_arr), fineroot_litter, fill_value='extrapolate' ) #testi   
+        #bmWithLeavesToWoodyLitter = interp1d(ageToBm(a_arr), woody_litter, fill_value='extrapolate' ) #testi
         bmToMortalityFineRoot = interp1d(ageToBmNoLeaves(a_arr), mortality_fineroot, fill_value='extrapolate' )
         bmToMortalityLeaves = interp1d(ageToBmNoLeaves(a_arr), mortality_leaf, fill_value='extrapolate' )
         bmToMortalityWoody =  interp1d(ageToBmNoLeaves(a_arr), mortality_woody, fill_value='extrapolate' )
@@ -319,6 +325,7 @@ class Allometry():
         allometry_f['ageToLeaves']= ageToLeaves
         
         allometry_f['bmToLeafMass'] = bmToLeafMass
+        allometry_f['bmWithLeavesToLeafMass'] = bmWithLeavesToLeafMass #added 18th Oct 23
         allometry_f['bmToLAI'] = bmToLAI
         allometry_f['bmToHdom'] = bmToHdom
         allometry_f['bmToYi'] = bmToYi
