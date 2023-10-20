@@ -255,8 +255,8 @@ class Canopylayer():
                     print('\n\nTESTI NPP =', self.NPP,'\n\n\n')
                     self.NPP_pot[ixs[m]] = self.NPP[ixs[m]]*1.1 # pitääkö näiden olla erilaiset??
                     
-                    self.NPP[ixs[m]] = self.NPP[ixs[m]]/self.stems[ixs[m]]
-                    self.NPP_pot[ixs[m]] = self.NPP_pot[ixs[m]]/self.stems[ixs[m]]
+                    #self.NPP[ixs[m]] = self.NPP[ixs[m]]/self.stems[ixs[m]]
+                    #self.NPP_pot[ixs[m]] = self.NPP_pot[ixs[m]]/self.stems[ixs[m]]
                     
         # print('\n\nTESTI NPP =', self.NPP,'\n\n\n')
 
