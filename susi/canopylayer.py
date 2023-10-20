@@ -261,7 +261,7 @@ class Canopylayer():
         # print('\n\nTESTI NPP =', self.NPP,'\n\n\n')
 
         ##self.NPP, self.NPP_pot = assimilation_yr(self.photopara, forc, wt, afp,
-                                       self.leafarea*2 * self.stems, lai_above)     # double sided LAI required                     
+        ##                               self.leafarea*2 * self.stems, lai_above)     # double sided LAI required                     
         #self.NPP, self.NPP_pot = assimilation_yr(self.photopara, forc, wt, afp,
         #                               self.leafarea*2, lai_above)     # double sided LAI required                     
         ##print(self.name,'in assimilate nstems', self.stems,'in assimilate, npp', self.NPP)
