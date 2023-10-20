@@ -225,14 +225,50 @@ class Canopylayer():
         """ Change unit of all variables to /tree """
         """ assimilation_yr function operates in /ha basis,"""
         lai_above = lai_above*2                                                # lai_above is updated in stand object        
-        self.NPP, self.NPP_pot = assimilation_yr(self.photopara, forc, wt, afp,
+        
+        if np.mean(self.volume)*np.mean(self.stems) > 15: 
+            self.NPP, self.NPP_pot = assimilation_yr(self.photopara, forc, wt, afp,
+                                           self.leafarea*2 * self.stems, lai_above)     # double sided LAI required
+            if self.name=='dominant':
+                print('in assimilate nstems', self.stems,'in assimilate, NPP before nutstat', self.NPP)
+                print('   ')
+                print('   ')
+                print('O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-')
+                print('in assimilate lai_above', lai_above,',self.leafarea*2 * self.stems', self.leafarea*2 * self.stems)
+            self.NPP = self.NPP * nut_stat / self.stems  * 1.1                     # returned back to tree basis unit
+            self.NPP_pot = self.NPP_pot * nut_stat / self.stems * 1.1               # returned back to tree basis units
+            
+            if self.name=='dominant':
+                print('canopylayer.py/assimilate: NPP after nutstat=', str(self.NPP))
+                print('canopylayer.py/assimilate: stems=', str(self.stems))
+        
+        else:
+            ixs = self.ixs
+            
+            for m in self.nlyrs:
+                
+                if m>0:
+                    # kumpi alle, ageToBm vai ageToBmNoLeaves ?
+                    self.NPP[ixs[m]] = self.allodic[m].allometry_f['ageToBm'](self.agearr[ixs[m]]+1) \
+                        - self.allodic[m].allometry_f['ageToBm'](self.agearr[ixs[m]])
+
+                    print('\n\nTESTI NPP =', self.NPP,'\n\n\n')
+                    self.NPP_pot[ixs[m]] = self.NPP[ixs[m]]*1.1 # pitääkö näiden olla erilaiset??
+                    
+                    self.NPP[ixs[m]] = self.NPP[ixs[m]]/self.stems[ixs[m]]
+                    self.NPP_pot[ixs[m]] = self.NPP_pot[ixs[m]]/self.stems[ixs[m]]
+                    
+        # print('\n\nTESTI NPP =', self.NPP,'\n\n\n')
+
+        ##self.NPP, self.NPP_pot = assimilation_yr(self.photopara, forc, wt, afp,
                                        self.leafarea*2 * self.stems, lai_above)     # double sided LAI required                     
         #self.NPP, self.NPP_pot = assimilation_yr(self.photopara, forc, wt, afp,
         #                               self.leafarea*2, lai_above)     # double sided LAI required                     
-        print(self.name,'in assimilate nstems', self.stems,'in assimilate, npp', self.NPP)
-        self.NPP = self.NPP * nut_stat / self.stems  * 1.1                     # returned back to tree basis unit
-        self.NPP_pot = self.NPP_pot * nut_stat / self.stems * 1.1               # returned back to tree basis units
-        print(self.name,'NPP per tree',self.NPP)
+        ##print(self.name,'in assimilate nstems', self.stems,'in assimilate, npp', self.NPP)
+        ##self.NPP = self.NPP * nut_stat / self.stems  * 1.1                     # returned back to tree basis unit
+        ##self.NPP_pot = self.NPP_pot * nut_stat / self.stems * 1.1               # returned back to tree basis units
+        ##print(self.name,'NPP per tree',self.NPP)
+        
         bm_increment = self.NPP 
         #bm = self.biomass_noleaves # tahan muutos bm noleaves #testi 280923
         ##bm = self.biomass_noleaves # sittenkin näin
@@ -268,8 +304,22 @@ class Canopylayer():
             print (np.round(np.mean(self.woodylitter),8),'woody l')
            
         
+        if np.mean(self.volume)*np.mean(self.stems) > 15:
+            delta_bm_noleaves = self.NPP - self.C_consumption - self.finerootlitter  - self.woodylitter
+        else:
+            delta_bm_noleaves = np.zeros([len(self.NPP)])
+            print('len(NPP)=', len(self.NPP))
+            for m in self.nlyrs:
+                
+                if m>0:
+                    
+                    delta_bm_noleaves[ixs[m]] = self.allodic[m].allometry_f['ageToBmNoLeaves'](self.agearr[ixs[m]]+1) \
+                        - self.allodic[m].allometry_f['ageToBmNoLeaves'](self.agearr[ixs[m]])
+                    
         
-        delta_bm_noleaves = self.NPP - self.C_consumption - self.finerootlitter  - self.woodylitter 
+        print('delta_bm_noleaves=', delta_bm_noleaves)
+        
+        ##delta_bm_noleaves = self.NPP - self.C_consumption - self.finerootlitter  - self.woodylitter 
         self.leafmass = self.new_lmass
         vol_ini =  self.volume.copy() 
         #"""
